@@ -50,7 +50,7 @@
      <configuration>
       <mainClass>fr.xtof54.App</mainClass>
       <arguments>
-          <argument>/home/xtof2/gatedAR.pdf</argument>
+          <argument>todo.pdf</argument>
       </arguments>
      </configuration>
     </execution>
