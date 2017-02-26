@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.regex.Pattern;
 import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -226,6 +227,7 @@ public class App extends PDFTextStripper
                 */
 
             float dy=(maxy-miny)/500f;
+            String prevs="";
             for (float l=miny;l<maxy;l+=dy) {
                 ArrayList<Lettre> charsligne = new ArrayList<Lettre>();
                 for (int i=0;i<pos.size();i++) {
@@ -234,9 +236,33 @@ public class App extends PDFTextStripper
                     }
                 }
                 Collections.sort(charsligne);
-                String s="";
-                for (int i=0;i<charsligne.size();i++) s+=charsligne.get(i).s;
-                System.out.println(l+" : "+s);
+                String s="", s2="";
+                int[] cols = {70,360,400,517};
+                String[] scols = {"","","","",""};
+                int col=0;
+                for (int i=0;i<charsligne.size();i++) {
+                    if (col<cols.length && charsligne.get(i).x>cols[col]) {
+                        scols[col]=""+s2.trim();
+                        col++;
+                        s2="";
+                    }
+                    s+=charsligne.get(i).s;
+                    s2+=charsligne.get(i).s;
+                }
+                scols[col]=""+s2.trim();
+                if (!prevs.equals(s) && s.trim().length()>0) {
+                    if (zone==0&&s.toLowerCase().contains("ancien solde")) zone=1;
+                    if (zone==1) {
+                        if (scols[0].trim().length()>0 && p.matcher(scols[0]).matches())
+                            System.out.println(scols[0]+" | "+scols[1]+" | "+scols[2]+" | "+scols[3]+" | "+scols[4]);
+                        if (s.toLowerCase().contains("solde en euros")) zone=2;
+                    }
+                }
+                //s="";
+                //for (int i=0;i<charsligne.size();i++) s+=charsligne.get(i).x+" ";
+                //System.out.println(l+" : "+s);
+                
+               prevs=s; 
             }
 
 	    }
@@ -259,6 +285,8 @@ public class App extends PDFTextStripper
             }
         }
 
+        final Pattern p = Pattern.compile("^\\d\\d.\\d\\d$");
+        int zone=0;
         HashSet<Float> allx = new HashSet<Float>();
         ArrayList<float[]> pos = new ArrayList<float[]>();
         ArrayList<String> txt = new ArrayList<String>();
